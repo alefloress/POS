@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POS · Reportes</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="wrapper">
+    <aside id="sidebar" class="sidebar"></aside>
+
+    <main class="content">
+      <div class="container-fluid py-3">
+
+        <!-- Filtros y acciones -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div>
+            <h4 class="m-0">Reportes</h4>
+            <div class="text-muted small">Ventas y movimientos de caja por rango de fechas</div>
+          </div>
+          <div class="d-flex gap-2">
+            <input id="from" type="date" class="form-control form-control-sm">
+            <input id="to" type="date" class="form-control form-control-sm">
+            <button id="btnApply" class="btn btn-primary btn-sm">Aplicar</button>
+            <button id="btnExport" class="btn btn-outline-dark btn-sm">Exportar CSV</button>
+          </div>
+        </div>
+
+        <!-- KPIs de ventas -->
+        <div class="row g-3">
+          <div class="col-md-3">
+            <div class="card p-3">
+              <div class="text-muted small">Total vendido</div>
+              <div id="rTotal" class="fs-4 fw-bold">$0</div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card p-3">
+              <div class="text-muted small">Ventas</div>
+              <div id="rCount" class="fs-4 fw-bold">0</div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card p-3">
+              <div class="text-muted small">Promedio ticket</div>
+              <div id="rAvg" class="fs-4 fw-bold">$0</div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card p-3">
+              <div class="text-muted small">Última venta</div>
+              <div id="rLast" class="fs-6 fw-semibold">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de ventas -->
+        <div class="card p-2 mt-3">
+          <div class="d-flex align-items-center justify-content-between px-2 pt-2">
+            <h6 class="m-0">Ventas en el rango</h6>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm mb-0">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Fecha</th>
+                  <th>Usuario</th>
+                  <th>Método</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody id="salesBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tabla de caja -->
+        <div class="card p-2 mt-4">
+          <div class="d-flex align-items-center justify-content-between px-2 pt-2">
+            <h6 class="m-0">Movimientos de caja (aperturas / cierres)</h6>
+            <div class="text-muted small">Muestra quién abrió/cerró caja y con cuánto efectivo</div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm mb-0">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Fecha / Hora</th>
+                  <th>Usuario</th>
+                  <th class="text-end">Monto declarado</th>
+                </tr>
+              </thead>
+              <tbody id="cashBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Montar sidebar con rol ADMIN -->
+  <script type="module">
+    import { requireAuth } from './js/auth.js';
+    import { mountSidebar } from './js/ui.js';
+    const u = requireAuth(['ADMIN']);
+    if (u) mountSidebar('reportes');
+  </script>
+
+  <!-- Lógica de reportes -->
+  <script type="module" src="js/reportes.js"></script>
+</body>
+</html>

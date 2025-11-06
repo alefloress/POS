@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POS · Ajustes</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="wrapper">
+    <aside id="sidebar" class="sidebar"></aside>
+
+    <main class="content">
+      <div class="container-fluid py-3">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div>
+            <h4 class="m-0">Ajustes</h4>
+            <div class="text-muted small">Parámetros del sistema</div>
+          </div>
+        </div>
+
+        <div class="card p-3">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="lowStock" class="form-label">Umbral de stock bajo</label>
+              <input id="lowStock" type="number" min="0" value="5" class="form-control">
+            </div>
+            <div class="col-md-4">
+              <label for="expiryDays" class="form-label">Días para “vence pronto”</label>
+              <input id="expiryDays" type="number" min="1" value="30" class="form-control">
+            </div>
+          </div>
+          <div class="mt-3">
+            <button id="btnSave" class="btn btn-primary">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { requireAuth } from './js/auth.js';
+    import { mountSidebar } from './js/ui.js';
+    const u = requireAuth(['ADMIN']);
+    if (u) mountSidebar('ajustes');
+  </script>
+  <script type="module" src="js/ajustes.js"></script>
+</body>
+</html>
+

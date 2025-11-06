@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ticket — MiCaja POS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">  
+  <style>
+    body{background:#fff;color:#000}
+    .ticket{
+      max-width:380px;
+      margin:0 auto;
+      padding:10px;
+      font-family:monospace;
+      font-size:14px;
+      line-height:1.4;
+    }
+    hr{margin:8px 0;border-top:1px dashed #000}
+    .label-row{
+      display:flex;
+      justify-content:space-between;
+    }
+    @media print {
+      .no-print{display:none}
+      body{background:#fff !important}
+    }
+  </style>
+</head>
+<body>
+  <div class="ticket">
+    <div class="text-center fw-bold">MiCaja POS</div>
+    <div class="text-center small">Venta / Boleta no válida como factura</div>
+    <div id="t-meta" class="small mt-1"></div>
+
+    <hr>
+
+    <div id="t-items"></div>
+
+    <hr>
+
+    <div class="label-row"><span>Subtotal</span><strong id="t-sub"></strong></div>
+    <div class="label-row"><span>IVA (19%)</span><strong id="t-iva"></strong></div>
+    <div class="label-row"><span>Total</span><strong id="t-total"></strong></div>
+
+    <hr>
+
+    <div class="label-row"><span>Método</span><strong id="t-method"></strong></div>
+    <div class="label-row"><span>Entregado</span><strong id="t-cash"></strong></div>
+    <div class="label-row"><span>Vuelto</span><strong id="t-change"></strong></div>
+
+    <div class="text-center small mt-2">
+      ¡Gracias por su compra!
+    </div>
+
+    <div class="text-center mt-3 no-print">
+      <button class="btn btn-dark btn-sm" onclick="window.print()">Imprimir de nuevo</button>
+      <a id="backBtn" class="btn btn-outline-secondary btn-sm" href="#">Volver</a>
+    </div>
+  </div>
+
+  <!-- SDK para leer la venta -->
+  <script src="assets/sdk.mock.js"></script>
+
+  <script type="module">
+    // Helpers
+    const CLP = v => '$' + Number(v||0).toLocaleString('es-CL');
+
+    function whoAmI(){
+      try{ return JSON.parse(localStorage.getItem('pos_user')||'null'); }catch{ return null; }
+    }
+
+    // Obtener ID de venta desde query (?id=123) o sessionStorage('pos_last_sale')
+    const params = new URLSearchParams(location.search);
+    const qId = params.get('id') || sessionStorage.getItem('pos_last_sale');
+
+    async function getSale(id){
+      if(!id) return null;
+
+      // 1) Intentar vía SDK
+      if(window.SDK?.Sales?.getOne){
+        try{
+          const s = await window.SDK.Sales.getOne(id);
+          if(s){
+            return normalizeSale(s);
+          }
+        }catch(e){
+          console.warn('SDK.Sales.getOne falló', e);
+        }
+      }
+
+      // 2) Fallback: localStorage legacy
+      try{
+        const all = JSON.parse(localStorage.getItem('pos_sales')||'[]');
+        const s = all.find(x => String(x.id) === String(id));
+        if(!s) return null;
+        return normalizeSale(s);
+      }catch{
+        return null;
+      }
+    }
+
+    function normalizeSale(s){
+      const tsMs = s.ts
+        ? new Date(s.ts).getTime()
+        : (s.date ? new Date(s.date).getTime() : Date.now());
+
+      return {
+        id: s.id || 'N/A',
+        ts: tsMs,
+        user: s.user || s.username || '-',
+        method: s.method || s.paymentMethod || '-',
+        cashGiven: Number(s.cashGiven || s.entregado || 0),
+        change: Number(s.change || s.vuelto || 0),
+        items: (s.items||[]).map(it => ({
+          name: it.name || it.nombre || '',
+          price: Number(it.price || it.precio || 0),
+          qty: Number(it.qty || it.quantity || 1)
+        })),
+        subtotal: Number(s.subtotal ?? s.sub ?? 0),
+        iva: Number(s.iva ?? s.tax ?? 0),
+        total: Number(s.total ?? 0)
+      };
+    }
+
+    function render(sale){
+      if(!sale){
+        document.body.innerHTML = `
+          <div class="ticket">
+            <div class="text-danger">No hay ticket disponible.</div>
+          </div>`;
+        return;
+      }
+
+      // cabecera
+      document.getElementById('t-meta').textContent =
+        `Folio: ${sale.id} · ${new Date(sale.ts).toLocaleString('es-CL')} · Cajero: ${sale.user}`;
+
+      // items
+      document.getElementById('t-items').innerHTML = sale.items.map(i => `
+        <div class="label-row">
+          <span>${i.name} x${i.qty}</span>
+          <span>${CLP(i.price * i.qty)}</span>
+        </div>
+      `).join('');
+
+      // totales
+      document.getElementById('t-sub').textContent   = CLP(sale.subtotal);
+      document.getElementById('t-iva').textContent   = CLP(sale.iva);
+      document.getElementById('t-total').textContent = CLP(sale.total);
+
+      // pago
+      document.getElementById('t-method').textContent = sale.method || '-';
+      document.getElementById('t-cash').textContent   = CLP(sale.cashGiven || 0);
+      document.getElementById('t-change').textContent = CLP(sale.change || 0);
+    }
+
+    function setupBack(){
+      const back = document.getElementById('backBtn');
+      const u = whoAmI();
+      const href = (u?.rol === 'CAJERO') ? 'cajero.html' : 'ventas.html';
+      back.setAttribute('href', href);
+    }
+
+    (async ()=>{
+      setupBack();
+      const sale = await getSale(qId);
+      render(sale);
+
+      // simulación ticket térmico: dispara impresión automática
+      window.print();
+    })();
+  </script>
+</body>
+</html>
+

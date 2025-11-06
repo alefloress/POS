@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MiCaja POS — Caja</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+
+  <style>
+    body {
+      background:#0a0d14;
+      color:#fff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Barra superior tipo POS */
+    .pos-topbar {
+      background:#000;
+      border-bottom:1px solid #2b2f3c;
+      padding:10px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .pos-top-left .brand {
+      font-weight:600;
+      font-size:1rem;
+      color:#fff;
+      line-height:1.2;
+    }
+    .pos-top-left .sub {
+      font-size:.7rem;
+      color:#9ca3af;
+    }
+    .pos-top-right {
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      color:#e5e7eb;
+      font-size:.8rem;
+    }
+    .cash-pill {
+      background:#111827;
+      border:1px solid #374151;
+      border-radius:6px;
+      padding:.4rem .6rem;
+      line-height:1.1;
+      text-align:left;
+      min-width:140px;
+    }
+    .cash-pill .label {
+      font-size:.65rem;
+      color:#9ca3af;
+    }
+    .cash-pill .value {
+      font-size:.8rem;
+      color:#fff;
+      font-weight:500;
+    }
+
+    .btn-ghost {
+      background:transparent;
+      border:1px solid #4b5563;
+      color:#fff;
+      border-radius:6px;
+      font-size:.8rem;
+      line-height:1.1;
+      padding:.4rem .6rem;
+    }
+
+    /* Layout principal */
+    .pos-main {
+      display:flex;
+      flex-wrap:wrap;
+      padding:16px;
+      gap:16px;
+      min-height:calc(100vh - 60px);
+    }
+
+    /* Panel productos (izquierda) */
+    .panel-left {
+      flex:1 1 60%;
+      min-width:320px;
+      background:#0f172a;
+      border:1px solid #1f2937;
+      border-radius:10px;
+      display:flex;
+      flex-direction:column;
+      max-height:calc(100vh - 92px);
+    }
+
+    .left-header {
+      padding:12px 16px;
+      border-bottom:1px solid #1f2937;
+    }
+    .left-header-label {
+      font-size:.75rem;
+      color:#9ca3af;
+      line-height:1.2;
+    }
+    .left-header-row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:8px;
+    }
+    .left-header-row input {
+      background:#1e253a;
+      border:1px solid #374151;
+      color:#fff;
+      font-size:.85rem;
+    }
+    .left-header-row input::placeholder {
+      color:#6b7280;
+    }
+    .left-header-row button {
+      white-space:nowrap;
+      font-size:.8rem;
+    }
+
+    .products-scroll {
+      overflow-y:auto;
+      flex:1;
+      padding:8px 16px 16px;
+    }
+
+    .product-card {
+      background:#1a233b;
+      border:1px solid #2f384f;
+      border-radius:8px;
+      padding:10px 12px;
+      color:#fff;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      font-size:.8rem;
+      line-height:1.3;
+      margin-bottom:8px;
+    }
+    .p-name {
+      font-weight:600;
+      font-size:.8rem;
+      color:#fff;
+    }
+    .p-meta {
+      color:#9ca3af;
+      font-size:.7rem;
+    }
+    .p-price {
+      text-align:right;
+      font-weight:600;
+      font-size:.8rem;
+      color:#fff;
+    }
+    .p-add-btn {
+      margin-top:6px;
+      font-size:.7rem;
+      line-height:1.1;
+      border-radius:6px;
+    }
+
+    /* Panel carrito (derecha) */
+    .panel-right {
+      flex:1 1 35%;
+      min-width:260px;
+      background:#111827;
+      border:1px solid #1f2937;
+      border-radius:10px;
+      display:flex;
+      flex-direction:column;
+      max-height:calc(100vh - 92px);
+    }
+
+    .cart-header {
+      border-bottom:1px solid #1f2937;
+      padding:12px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      color:#fff;
+    }
+    .cart-header .title {
+      font-size:.9rem;
+      font-weight:600;
+      line-height:1.2;
+    }
+    .cart-header .hint {
+      font-size:.7rem;
+      color:#6b7280;
+      line-height:1.2;
+      text-align:right;
+    }
+
+    .cart-scroll {
+      flex:1;
+      overflow-y:auto;
+      padding:8px 16px;
+      font-size:.8rem;
+    }
+
+    .cart-item {
+      border-bottom:1px solid #1f2937;
+      padding:8px 0;
+      color:#fff;
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .ci-left {
+      flex:1;
+      min-width:0;
+    }
+    .ci-name {
+      font-weight:600;
+      font-size:.8rem;
+      color:#fff;
+      line-height:1.2;
+    }
+    .ci-sub {
+      color:#9ca3af;
+      font-size:.7rem;
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      align-items:center;
+    }
+    .ci-sub .qty-controls button {
+      font-size:.7rem;
+      line-height:1.1;
+      padding:.15rem .4rem;
+      border-radius:4px;
+    }
+    .ci-price {
+      text-align:right;
+      font-weight:600;
+      font-size:.8rem;
+      color:#fff;
+      line-height:1.2;
+    }
+
+    .totals-box {
+      border-top:1px solid #1f2937;
+      padding:12px 16px;
+      font-size:.8rem;
+      color:#fff;
+    }
+    .total-row {
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:4px;
+      line-height:1.2;
+    }
+    .total-row.big .label {
+      font-size:1rem;
+      font-weight:500;
+      color:#fff;
+    }
+    .total-row.big .value {
+      font-size:1rem;
+      font-weight:700;
+      color:#fff;
+    }
+    .charge-btn-wrap {
+      margin-top:12px;
+    }
+    #btnCobrar {
+      width:100%;
+      background:#10b981;
+      border:0;
+      border-radius:8px;
+      font-weight:600;
+      color:#022c22;
+      font-size:1rem;
+      padding:.7rem 1rem;
+    }
+    #btnCobrar[disabled]{
+      background:#4b5563;
+      color:#9ca3af;
+      cursor:not-allowed;
+    }
+
+    .cash-actions {
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .cash-btn {
+      background:#1f2937;
+      color:#fff;
+      border:1px solid #4b5563;
+      border-radius:6px;
+      font-size:.7rem;
+      line-height:1.1;
+      padding:.35rem .5rem;
+      text-align:center;
+      white-space:nowrap;
+    }
+
+    /* input hidden del lector */
+    #scanInput {
+      position:absolute;
+      left:-9999px;
+      width:1px;
+      height:1px;
+      opacity:0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra superior tipo POS -->
+  <header class="pos-topbar">
+    <div class="pos-top-left">
+      <div class="brand">MiCaja POS</div>
+      <div class="sub" id="cashStatus">Caja: —</div>
+    </div>
+
+    <div class="pos-top-right">
+      <div class="cash-actions">
+        <button id="btnOpenCash"  class="cash-btn">Abrir caja</button>
+        <button id="btnCloseCash" class="cash-btn">Cerrar caja</button>
+      </div>
+
+      <div class="cash-pill">
+        <div class="label">Usuario</div>
+        <div class="value" id="userBadge">—</div>
+      </div>
+
+      <button id="btnLogout" class="btn-ghost">Salir</button>
+    </div>
+  </header>
+
+  <!-- Layout principal -->
+  <main class="pos-main">
+    <!-- input donde escribe el lector de código de barras -->
+    <input id="scanInput" autocomplete="off" />
+
+    <!-- IZQUIERDA: catálogo / búsqueda -->
+    <section class="panel-left">
+      <div class="left-header">
+        <div class="left-header-label">Buscar producto</div>
+        <div class="left-header-row">
+          <input id="q" class="form-control form-control-sm" placeholder="Nombre, código, código de barra...">
+          <button class="btn btn-info btn-sm" id="btnBuscar">Buscar</button>
+        </div>
+      </div>
+
+      <div id="listaProductos" class="products-scroll">
+        <!-- productos renderizados por JS -->
+      </div>
+    </section>
+
+    <!-- DERECHA: carrito / totales -->
+    <section class="panel-right">
+      <div class="cart-header">
+        <div class="title">Carrito</div>
+        <div class="hint text-end">Ticket: Ctrl+P<br>Pago al cobrar →</div>
+      </div>
+
+      <div id="carrito" class="cart-scroll">
+        <!-- ítems renderizados por JS -->
+      </div>
+
+      <div class="totals-box">
+        <div class="total-row">
+          <div class="label text-secondary">Subtotal</div>
+          <div class="value" id="subtotal">$0</div>
+        </div>
+        <div class="total-row">
+          <div class="label text-secondary">IVA (19%)</div>
+          <div class="value" id="iva">$0</div>
+        </div>
+        <div class="total-row big">
+          <div class="label">TOTAL</div>
+          <div class="value" id="total">$0</div>
+        </div>
+
+        <div class="charge-btn-wrap">
+          <button id="btnCobrar" disabled>Cobrar</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SDK global -->
+  <script src="assets/sdk.mock.js"></script>
+
+  <!-- Auto logout por inactividad -->
+  <script src="js/idleTimeout.js"></script>
+
+  <!-- Lógica POS -->
+  <script type="module">
+    import { requireAuth, logout } from './js/auth.js';
+    import { initPOS } from './js/pos.js';
+
+    const u = requireAuth(['CAJERO']);
+    if (u) {
+      // mostrar usuario en la esquina
+      const badge = document.getElementById('userBadge');
+      if (badge) badge.textContent = `${u.u} · ${u.rol}`;
+
+      // logout
+      document.getElementById('btnLogout')?.addEventListener('click', logout);
+
+      // refs de caja
+      const btnCobrar = document.querySelector('#btnCobrar');
+      const lblStatus = document.querySelector('#cashStatus');
+      const btnOpen   = document.querySelector('#btnOpenCash');
+      const btnClose  = document.querySelector('#btnCloseCash');
+
+      // estado caja
+      async function refreshCashStatus(){
+        const cur = await window.SDK.Cash.current();
+        if (cur) {
+          lblStatus.textContent =
+            `Caja abierta por ${cur.user} · ${new Date(cur.openTs).toLocaleString('es-CL')}`;
+          btnCobrar?.removeAttribute('disabled');
+        } else {
+          lblStatus.textContent = 'Caja: cerrada';
+          btnCobrar?.setAttribute('disabled','disabled');
+        }
+      }
+
+      btnOpen?.addEventListener('click', async ()=>{
+        const monto = Number(prompt('Monto de apertura (opcional):','0')) || 0;
+        try{
+          await window.SDK.Cash.open({ user: u.u, openingAmount: monto });
+          await refreshCashStatus();
+          alert('Caja abierta correctamente.');
+        }catch(e){
+          alert(e?.message || 'No se pudo abrir la caja.');
+        }
+      });
+
+      btnClose?.addEventListener('click', async ()=>{
+        const monto = Number(prompt('Monto de cierre (opcional):','0')) || 0;
+        try{
+          await window.SDK.Cash.close({ user: u.u, closingAmount: monto });
+          await refreshCashStatus();
+          alert('Caja cerrada correctamente.');
+        }catch(e){
+          alert(e?.message || 'No se pudo cerrar la caja.');
+        }
+      });
+
+      // POS funcional (catálogo/carrito/cobro → pago.html + lector)
+      initPOS({
+        selectors: {
+          q: '#q',
+          list: '#listaProductos',
+          cart: '#carrito',
+          sub: '#subtotal',
+          iva: '#iva',
+          total: '#total',
+          chargeBtn: '#btnCobrar'
+        },
+        user: u
+      });
+
+      // botón Buscar = fuerza filtrar de nuevo
+      document.getElementById('btnBuscar')?.addEventListener('click', () => {
+        document.getElementById('q')?.dispatchEvent(new Event('input'));
+      });
+
+      // al cargar
+      refreshCashStatus();
+    }
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MiCaja POS — Vende, demo web y descarga</title>
+  <meta name="description" content="Compra MiCaja POS, prueba la demo en web y descarga la versión de escritorio (.jar).">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="bg-dark text-light">
+  <!-- NAV -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-opacity-75 bg-black sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">MiCaja POS</a>
+      <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
+      <div id="nav" class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#comprar">Comprar</a></li>
+          <li class="nav-item"><a class="nav-link" href="#demo">Demo Web</a></li>
+          <li class="nav-item"><a class="nav-link" href="#descarga">Descarga</a></li>
+          <li class="nav-item"><a class="nav-link" href="#caracteristicas">Características</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="py-5">
+    <div class="container">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+          <span class="badge text-bg-secondary">POS para pymes</span>
+          <h1 class="display-5 fw-bold mt-3">Vende con MiCaja POS: <span class="text-info">demo web</span> o <span class="text-info">descarga .jar</span></h1>
+          <p class="lead text-secondary">Caja, ventas con IVA, pagos, ticket e inventario. Listo para mostrar en segundos.</p>
+          <div class="d-flex gap-2 flex-wrap mt-2">
+            <a class="btn btn-info btn-lg" href="#comprar">Comprar licencia</a>
+            <a class="btn btn-outline-light btn-lg" href="#demo">Abrir demo web</a>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="card bg-black border-secondary p-3">
+            <h5 class="mb-2">Incluye</h5>
+            <ul class="text-secondary mb-0">
+              <li>Licencia 1 tienda / 1 caja</li>
+              <li>Actualizaciones menores</li>
+              <li>Soporte por correo 30 días</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PLANES -->
+  <section id="comprar" class="py-5">
+    <div class="container">
+      <h2 class="h3 fw-bold mb-3">Planes</h2>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="card bg-black border-secondary h-100 p-4">
+            <h3 class="h5">Starter</h3>
+            <div class="fs-1 fw-bold">$0</div>
+            <p class="text-secondary">Demo web + .jar (pruebas)</p>
+            <ul class="text-secondary small">
+              <li>Funciones base</li><li>Ticket PDF</li><li>Sin soporte</li>
+            </ul>
+            <a class="btn btn-outline-light w-100" href="#demo">Probar ahora</a>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card bg-black border-info h-100 p-4">
+            <h3 class="h5">Negocio</h3>
+            <div class="fs-1 fw-bold">$XX.XXX</div>
+            <p class="text-secondary">1 tienda / 1 caja</p>
+            <ul class="text-secondary small">
+              <li>Soporte 30 días</li><li>Actualizaciones menores</li><li>Acceso demo web</li>
+            </ul>
+            <a class="btn btn-info w-100" href="#contacto">Comprar</a>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card bg-black border-secondary h-100 p-4">
+            <h3 class="h5">Tienda Plus</h3>
+            <div class="fs-1 fw-bold">$YY.YYY</div>
+            <p class="text-secondary">1 tienda / hasta 3 cajas</p>
+            <ul class="text-secondary small">
+              <li>Prioridad de soporte</li><li>Capacitación breve</li><li>Acceso demo web</li>
+            </ul>
+            <a class="btn btn-outline-light w-100" href="#contacto">Cotizar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section id="demo" class="py-5">
+    <div class="container">
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="card bg-black border-secondary p-4 h-100">
+            <h2 class="h4">Demo web en vivo</h2>
+            <p class="text-secondary">Navegador + conexión, sin instalar nada. Ideal para mostrar.</p>
+            <ul class="text-secondary">
+              <li>Login y roles (ADMIN/CAJERO)</li>
+              <li>Ventas con IVA y control de stock</li>
+              <li>Ticket imprimible</li>
+              <li>Consulta de inventario</li>
+            </ul>
+            <a class="btn btn-info" href="login.html">Abrir demo web</a>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="card bg-black border-secondary p-4 h-100">
+            <h3 class="h6">Accesos de prueba</h3>
+            <table class="table table-sm table-dark mt-2 mb-0">
+              <thead><tr><th>Rol</th><th>Usuario</th><th>Clave</th></tr></thead>
+              <tbody>
+                <tr><td>ADMIN</td><td>admin</td><td>admin123</td></tr>
+                <tr><td>CAJERO</td><td>cajero</td><td>cajero123</td></tr>
+              </tbody>
+            </table>
+            <p class="small text-secondary mt-2 mb-0">No uses datos reales en la demo.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DESCARGA -->
+  <section id="descarga" class="py-5">
+    <div class="container">
+      <div class="card bg-black border-secondary p-4">
+        <h2 class="h4">Descarga (escritorio)</h2>
+        <ol class="mb-2">
+          <li>Instala <strong>Java 21</strong>.</li>
+          <li>Descarga el release <a href="https://github.com/alefloress/POS/releases/tag/v1.0.0" target="_blank">MiCaja POS v1.0.0</a>.</li>
+          <li>Ejecuta: <code>java -jar MiCajaPOS-1.0.0.jar</code></li>
+        </ol>
+        <small class="text-secondary">¿Problemas? Revisa la guía incluida.</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="caracteristicas" class="py-5">
+    <div class="container">
+      <h2 class="h3 fw-bold mb-3">Características</h2>
+      <div class="row g-3">
+        <div class="col-md-4"><div class="card bg-black border-secondary p-3 h-100"><h5>Ventas y caja</h5><p class="text-secondary mb-0">Apertura, venta, pagos, ticket y arqueo.</p></div></div>
+        <div class="col-md-4"><div class="card bg-black border-secondary p-3 h-100"><h5>Inventario</h5><p class="text-secondary mb-0">Stock y movimientos; no negativos.</p></div></div>
+        <div class="col-md-4"><div class="card bg-black border-secondary p-3 h-100"><h5>Roles y permisos</h5><p class="text-secondary mb-0">ADMIN gestiona; CAJERO vende.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section id="contacto" class="py-5">
+    <div class="container">
+      <div class="card bg-black border-secondary p-4">
+        <h2 class="h4">Contacto</h2>
+        <form class="row g-2 mt-1" onsubmit="return enviarContacto(event)">
+          <div class="col-md-4"><input class="form-control" id="cNombre" placeholder="Nombre" required></div>
+          <div class="col-md-4"><input class="form-control" id="cEmail" type="email" placeholder="Email" required></div>
+          <div class="col-md-4"><button class="btn btn-info w-100">Quiero comprar</button></div>
+          <div class="col-12"><textarea class="form-control" id="cMsg" rows="3" placeholder="Cuéntanos tu necesidad"></textarea></div>
+          <div class="col-12"><div id="cAlert" class="alert alert-success d-none mb-0">¡Gracias! Te escribiremos pronto.</div></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer class="py-4 text-center text-secondary">
+    <div class="container small">MiCaja POS © 2025 · <a class="link-light" href="#demo">Demo</a> · <a class="link-light" href="#descarga">Descarga</a></div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

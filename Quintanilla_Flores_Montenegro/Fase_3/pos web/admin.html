@@ -1,0 +1,129 @@
+ <!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Almacén Sonia — Dashboard</title>
+  <!-- Diseño consistente -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="wrapper">
+  <!-- Sidebar navegable -->
+  <aside id="sidebar" class="sidebar"></aside>
+
+  <main class="content">
+    <div class="container-fluid py-3">
+
+      <!-- Encabezado -->
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h4 class="m-0">Dashboard</h4>
+          <div class="text-muted small">Resumen del negocio</div>
+        </div>
+        <div>
+          <button id="btnRefresh" class="btn btn-primary btn-sm">Actualizar</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="row g-3">
+        <div class="col-12 col-md-3">
+          <div class="card p-3">
+            <div class="text-muted small">Ventas Hoy</div>
+            <div id="kpiToday" class="fs-4 fw-bold">$0</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-3">
+          <div class="card p-3">
+            <div class="text-muted small">Ventas 7 días</div>
+            <div id="kpiWeek" class="fs-4 fw-bold">$0</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-3">
+          <div class="card p-3">
+            <div class="text-muted small">Ventas 30 días</div>
+            <div id="kpiMonth" class="fs-4 fw-bold">$0</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-3">
+          <div class="card p-3">
+            <div class="text-muted small">Productos en Inventario</div>
+            <div id="kpiInventory" class="fs-4 fw-bold">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paneles -->
+      <div class="row g-3 mt-1">
+        <div class="col-12 col-lg-6">
+          <div class="card p-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <h6 class="m-0">Stock bajo</h6>
+              <span class="badge bg-secondary" id="lowStockBadge">umbral</span>
+            </div>
+            <div class="table-responsive mt-2">
+              <table class="table table-sm mb-0">
+                <thead>
+                  <tr><th>Código</th><th>Producto</th><th class="text-end">Stock</th></tr>
+                </thead>
+                <tbody id="lowBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+          <div class="card p-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <h6 class="m-0">Vencen pronto</h6>
+              <span class="badge bg-secondary" id="expiryBadge">días</span>
+            </div>
+            <div class="table-responsive mt-2">
+              <table class="table table-sm mb-0">
+                <thead>
+                  <tr><th>Código</th><th>Producto</th><th>Vence</th></tr>
+                </thead>
+                <tbody id="expBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ventas recientes -->
+      <div class="card p-3 mt-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <h6 class="m-0">Ventas recientes</h6>
+          <a href="reportes.html" class="btn btn-outline-dark btn-sm">Ver reportes</a>
+        </div>
+        <div class="table-responsive mt-2">
+          <table class="table table-sm mb-0">
+            <thead>
+              <tr><th>ID</th><th>Fecha</th><th>Usuario</th><th>Método</th><th class="text-end">Total</th></tr>
+            </thead>
+            <tbody id="recentBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Montaje del sidebar y guardia -->
+<script type="module">
+  import { requireAuth } from './js/auth.js';
+  import { mountSidebar } from './js/ui.js';
+  const u = requireAuth(['ADMIN']);
+  if (u) mountSidebar('dashboard');
+</script>
+
+<!-- Lógica del Dashboard -->
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>
+
+
+
