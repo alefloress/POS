@@ -1,8 +1,4 @@
-// =========================
-//  DEMO POS - app.js
-// =========================
 
-// --------- AUTH ----------
 function doLogin(e){
   e.preventDefault();
   const u = document.getElementById('user').value.trim();
