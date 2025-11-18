@@ -1,53 +1,89 @@
-// =============================
-//     LOGIN SYSADMIN
-// =============================
-function doSysAdminLogin(e){
+// ======================================================================
+// sysadmin.js
+// Maneja:
+//   • Login especial del SYSADMIN
+//   • Protección de páginas del panel
+//   • Cierre de sesión
+//
+// Este archivo NO se conecta a la API. Solo controla sesión y rol.
+// ======================================================================
+
+
+// ======================================================================
+// 1) LOGIN DEL SYSADMIN
+// ======================================================================
+function doSysAdminLogin(e) {
     e.preventDefault();
 
-    const u = document.getElementById("sys_user").value.trim();
-    const p = document.getElementById("sys_pass").value.trim();
+    const user = document.getElementById("sys_user").value.trim();
+    const pass = document.getElementById("sys_pass").value.trim();
 
-    // Credenciales del SYSADMIN (puedes cambiarlas)
-    const valido = (u === "sysadmin" && p === "super123");
+    // Credenciales del SYSADMIN (temporales, NO reales)
+    const valido = (user === "sysadmin" && pass === "super123");
 
-    if(!valido){
-        const msg = document.getElementById("errorMsg");
-        if(msg) msg.classList.remove("d-none");
+    if (!valido) {
+        document.getElementById("errorMsg")?.classList.remove("d-none");
         return false;
     }
 
-    // Guardamos sesión especial del SYSADMIN
+    // Guardar sesión del SYSADMIN
     localStorage.setItem("pos_user", JSON.stringify({
-        user: u,
+        user: user,
         rol: "SYSADMIN",
-        ts: Date.now()
+        ts: Date.now()          // timestamp de inicio de sesión
     }));
 
-    // Redirección al panel
+    // Redirige al panel principal
     window.location.href = "sysadmin-panel.html";
     return false;
 }
 
-// =============================
-//   PROTEGER PÁGINAS SYSADMIN
-// =============================
-function guardSysAdmin(){
-    try{
-        const u = JSON.parse(localStorage.getItem("pos_user") || "null");
-        if(!u || u.rol !== "SYSADMIN"){
-            alert("Acceso solo para SYSADMIN");
-            window.location.href = "sysadmin-login.html";
-            throw new Error("No autorizado");
-        }
+
+// ======================================================================
+// 2) OBTENER USUARIO LOGEADO
+// ======================================================================
+function getLoggedUser() {
+    try {
+        return JSON.parse(localStorage.getItem("pos_user") || "null");
     } catch {
-        window.location.href = "sysadmin-login.html";
+        return null;
     }
 }
 
-// =============================
-//      CERRAR SESIÓN
-// =============================
-function logoutSysAdmin(){
+
+// ======================================================================
+// 3) PROTEGER EL PANEL SYSADMIN
+// ======================================================================
+// Esta función se ejecuta EN EL onload de sysadmin-panel.html.
+//
+// Si el usuario NO es SYSADMIN:
+//   → lo redirige al login
+//
+// Si la sesión no existe o está corrupta:
+//   → redirige al login
+// ======================================================================
+function guardSysAdmin() {
+    const u = getLoggedUser();
+
+    if (!u || u.rol !== "SYSADMIN") {
+        alert("Acceso permitido solo para SYSADMIN.");
+        window.location.href = "sysadmin-login.html";
+        return;
+    }
+
+    // Si quieres agregar expiración de sesión:
+    // const maxTiempo = 8 * 60 * 60 * 1000; // 8 horas
+    // if (Date.now() - u.ts > maxTiempo) {
+    //     alert("Sesión expirada");
+    //     logoutSysAdmin();
+    // }
+}
+
+
+// ======================================================================
+// 4) CERRAR SESIÓN DEL SYSADMIN
+// ======================================================================
+function logoutSysAdmin() {
     localStorage.removeItem("pos_user");
     window.location.href = "sysadmin-login.html";
 }
