@@ -71,8 +71,17 @@ function guardSysAdmin(){
     } catch (e) {
         console.error("Error en guardSysAdmin:", e);
         window.location.href = "sysadmin-login.html";
+        return;
     }
+
+    // Si quieres agregar expiración de sesión:
+    // const maxTiempo = 8 * 60 * 60 * 1000; // 8 horas
+    // if (Date.now() - u.ts > maxTiempo) {
+    //     alert("Sesión expirada");
+    //     logoutSysAdmin();
+    // }
 }
+
 
 // =============================
 //      CERRAR SESIÓN
