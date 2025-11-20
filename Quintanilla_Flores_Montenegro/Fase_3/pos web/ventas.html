@@ -78,63 +78,75 @@
   </div>
 
   <!-- SDK primero -->
-  <script src="assets/sdk.mock.js"></script>
+  <script src="assets/sdk.js"></script>
 
-  <!-- Lógica: auth + POS + caja -->
+    <!-- Lógica: auth + POS + caja -->
   <script type="module">
     import { requireAuth, logout as doLogout } from './js/auth.js';
     import { initPOS } from './js/pos.js';
 
-    // Guard
+    // Guard: sólo ADMIN puede entrar aquí (ajusta si quieres)
     const u = requireAuth(['ADMIN']);
-    // expose logout
     window.logout = doLogout;
 
-    // Pintar badge usuario
+    // Badge usuario
     const ub = document.getElementById('userBadge');
     if (u && ub) ub.textContent = `${u.rol} · ${u.u}`;
 
-    // refs UI
+    // Referencias UI
     const btnCobrar = document.querySelector('#btnCobrar');
     const lblStatus = document.querySelector('#cashStatus');
     const btnOpen   = document.querySelector('#btnOpenCash');
     const btnClose  = document.querySelector('#btnCloseCash');
 
     // Estado de caja
-    async function refreshCashStatus(){
+    async function refreshCashStatus() {
       const cur = await window.SDK.Cash.current();
-      if (cur) {
-        lblStatus.textContent = `Caja abierta por ${cur.user} desde ${new Date(cur.openTs).toLocaleString('es-CL')}`;
+
+      if (cur && cur.status === 'OPEN') {
+        const openedText = cur.opened_at
+          ? new Date(cur.opened_at).toLocaleString('es-CL')
+          : '';
+        lblStatus.textContent = `Caja abierta (ID ${cur.id}) desde ${openedText}`;
         btnCobrar?.removeAttribute('disabled');
       } else {
         lblStatus.textContent = 'Caja: cerrada';
-        btnCobrar?.setAttribute('disabled','disabled');
+        btnCobrar?.setAttribute('disabled', 'disabled');
       }
     }
 
-    btnOpen?.addEventListener('click', async ()=>{
-      const monto = Number(prompt('Monto de apertura (opcional):','0')) || 0;
-      try{
-        await window.SDK.Cash.open({ user: u.u, openingAmount: monto });
+    // Abrir caja
+    btnOpen?.addEventListener('click', async () => {
+      const monto = Number(prompt('Monto de apertura (opcional):', '0')) || 0;
+      try {
+        await window.SDK.Cash.open({
+          // si un día tienes varios registros físicos, aquí pasas su ID
+          registerId: 1,
+          openingAmount: monto,
+        });
         await refreshCashStatus();
         alert('Caja abierta.');
-      }catch(e){
+      } catch (e) {
         alert(e?.message || 'No se pudo abrir la caja.');
       }
     });
 
-    btnClose?.addEventListener('click', async ()=>{
-      const monto = Number(prompt('Monto de cierre (opcional):','0')) || 0;
-      try{
-        await window.SDK.Cash.close({ user: u.u, closingAmount: monto });
+    // Cerrar caja
+    btnClose?.addEventListener('click', async () => {
+      const monto = Number(prompt('Monto de cierre (opcional):', '0')) || 0;
+      try {
+        await window.SDK.Cash.close({
+          declaredAmount: monto,
+          closingAmount: monto,
+        });
         await refreshCashStatus();
         alert('Caja cerrada.');
-      }catch(e){
+      } catch (e) {
         alert(e?.message || 'No se pudo cerrar la caja.');
       }
     });
 
-    // Inicializar POS
+    // Inicializar POS (productos + carrito)
     initPOS({
       selectors: {
         q: '#q',
@@ -143,10 +155,10 @@
         sub: '#subtotal',
         iva: '#iva',
         total: '#total',
-        chargeBtn: '#btnCobrar'
+        chargeBtn: '#btnCobrar',
       },
       user: u,
-      goToTicket: 'ticket.html'
+      goToTicket: 'ticket.html',
     });
 
     // Botón buscar dispara el filtro
@@ -154,8 +166,9 @@
       document.getElementById('q')?.dispatchEvent(new Event('input'));
     });
 
-    // al cargar
+    // Al cargar la página
     refreshCashStatus();
   </script>
+
 </body>
 </html>

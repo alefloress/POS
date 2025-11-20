@@ -1,31 +1,49 @@
 // =============================
-//     LOGIN SYSADMIN
+//     LOGIN SYSADMIN (API)
 // =============================
-function doSysAdminLogin(e){
+async function doSysAdminLogin(e){
     e.preventDefault();
 
-    const u = document.getElementById("sys_user").value.trim();
-    const p = document.getElementById("sys_pass").value.trim();
+    const uInput = document.getElementById("sys_user").value.trim();
+    const pInput = document.getElementById("sys_pass").value.trim();
 
-    // Credenciales del SYSADMIN (puedes cambiarlas)
-    const valido = (u === "sysadmin" && p === "super123");
+    const msg = document.getElementById("errorMsg");
+    if (msg) msg.classList.add("d-none");
 
-    if(!valido){
-        const msg = document.getElementById("errorMsg");
-        if(msg) msg.classList.remove("d-none");
+    if (!uInput || !pInput) {
+        if (msg) msg.classList.remove("d-none");
         return false;
     }
 
-    // Guardamos sesión especial del SYSADMIN
-    localStorage.setItem("pos_user", JSON.stringify({
-        user: u,
-        rol: "SYSADMIN",
-        ts: Date.now()
-    }));
+    try {
+        // 1) Login contra la API (usa el SDK que ya llama a /auth/login + /auth/whoami)
+        const session = await SDK.Auth.login({ username: uInput, password: pInput });
 
-    // Redirección al panel
-    window.location.href = "sysadmin-panel.html";
-    return false;
+        // 2) Normalizar username y rol desde lo que devuelva el SDK
+        const username = String(
+            session.username || session.u || uInput
+        ).toLowerCase();
+
+        const role = String(
+            session.role || session.rol || ""
+        ).toUpperCase();
+
+        // 3) Este panel es SOLO para sysadmin: permitimos si
+        //    - username es "sysadmin"   O
+        //    - el rol es "SYSADMIN"
+        if (username !== "sysadmin" && role !== "SYSADMIN") {
+            alert("Este panel es solo para el usuario SYSADMIN.");
+            return false;
+        }
+
+        // 4) Si todo OK, redirigimos al panel
+        window.location.href = "sysadmin-panel.html";
+        return false;
+    } catch (err) {
+        console.error("Error en login SYSADMIN:", err);
+        if (msg) msg.classList.remove("d-none");
+        return false;
+    }
 }
 
 // =============================
@@ -33,13 +51,25 @@ function doSysAdminLogin(e){
 // =============================
 function guardSysAdmin(){
     try{
-        const u = JSON.parse(localStorage.getItem("pos_user") || "null");
-        if(!u || u.rol !== "SYSADMIN"){
+        const raw = localStorage.getItem("pos_user") || "null";
+        const u = JSON.parse(raw);
+
+        const username = String(
+            (u && (u.u || u.username)) || ""
+        ).toLowerCase();
+
+        const role = String(
+            (u && (u.rol || u.role)) || ""
+        ).toUpperCase();
+
+        // Misma regla: sólo sysadmin por username o rol
+        if (username !== "sysadmin" && role !== "SYSADMIN") {
             alert("Acceso solo para SYSADMIN");
             window.location.href = "sysadmin-login.html";
             throw new Error("No autorizado");
         }
-    } catch {
+    } catch (e) {
+        console.error("Error en guardSysAdmin:", e);
         window.location.href = "sysadmin-login.html";
     }
 }
@@ -47,7 +77,11 @@ function guardSysAdmin(){
 // =============================
 //      CERRAR SESIÓN
 // =============================
-function logoutSysAdmin(){
-    localStorage.removeItem("pos_user");
+async function logoutSysAdmin(){
+    try {
+        await SDK.Auth.logout();
+    } catch {
+        localStorage.removeItem("pos_user");
+    }
     window.location.href = "sysadmin-login.html";
 }

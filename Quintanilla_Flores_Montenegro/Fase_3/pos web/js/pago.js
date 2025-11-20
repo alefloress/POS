@@ -1,147 +1,120 @@
 // js/pago.js
+// Pantalla de pago: usa el checkout de sessionStorage y SDK.Sales
 
-// Utilidad CLP
-const CLP = v => '$' + Number(v || 0).toLocaleString('es-CL');
+import { requireAuth } from './auth.js';
 
-// Leo payload temporal del checkout
-let checkout;
-try {
-  checkout = JSON.parse(sessionStorage.getItem('pos_checkout') || 'null');
-} catch {
-  checkout = null;
+const u = requireAuth(['ADMIN', 'CASHIER']);
+if (!u) {
+  throw new Error('Sin sesión');
 }
 
-// refs DOM
-const listaResumen = document.getElementById('listaResumen');
-const p_subtotal   = document.getElementById('p_subtotal');
-const p_iva        = document.getElementById('p_iva');
-const p_total      = document.getElementById('p_total');
+const CLP = (v) => '$' + Number(v || 0).toLocaleString('es-CL');
 
-const metodoSel    = document.getElementById('metodo');
-const entregadoInp = document.getElementById('entregado');
-const vueltoInp    = document.getElementById('vuelto');
-
-const btnConfirmar = document.getElementById('btnConfirmar');
-const btnVolver    = document.getElementById('btnVolver');
-
-// Para volver al módulo correcto según el rol guardado
-function getUser() {
-  try {
-    return JSON.parse(localStorage.getItem('pos_user') || 'null');
-  } catch {
-    return null;
-  }
+// Leer checkout guardado por pos.js
+const raw = sessionStorage.getItem('pos_checkout');
+if (!raw) {
+  alert('No hay una venta en curso.');
+  window.location.href = 'ventas.html';
 }
 
-// Render inicial; si no hay checkout, mostramos error
+const checkout = JSON.parse(raw || '{}');
+if (!checkout.items || !checkout.items.length) {
+  alert('El carrito está vacío.');
+  window.location.href = 'ventas.html';
+}
+
+// Referencias DOM
+const listaResumen  = document.getElementById('listaResumen');
+const lblSub        = document.getElementById('p_subtotal');
+const lblIva        = document.getElementById('p_iva');
+const lblTotal      = document.getElementById('p_total');
+const selMetodo     = document.getElementById('metodo');
+const inpEntregado  = document.getElementById('entregado');
+const inpVuelto     = document.getElementById('vuelto');
+const btnConfirm    = document.getElementById('btnConfirmar');
+const btnVolver     = document.getElementById('btnVolver');
+
+// Pintar resumen
 function renderResumen() {
-  if (!checkout) {
-    listaResumen.innerHTML = `<div class="text-danger">No hay datos de compra.</div>`;
-    p_subtotal.textContent = '$0';
-    p_iva.textContent      = '$0';
-    p_total.textContent    = '$0';
-    return;
-  }
-
-  // detalle items
-  listaResumen.innerHTML = checkout.items.map(it => `
-    <div class="d-flex justify-content-between border-bottom border-secondary py-1">
-      <div class="me-2">
-        <div class="text-white fw-semibold">${it.nombre}</div>
-        <div class="text-secondary small">x${it.qty} · ${CLP(it.precio)}</div>
+  listaResumen.innerHTML = checkout.items
+    .map(i => `
+      <div class="d-flex justify-content-between">
+        <span>${i.nombre} x${i.qty}</span>
+        <span>${CLP(i.precio * i.qty)}</span>
       </div>
-      <div class="text-end text-white small fw-bold">${CLP(it.precio * it.qty)}</div>
-    </div>
-  `).join('');
+    `)
+    .join('');
 
-  p_subtotal.textContent = CLP(checkout.subtotal);
-  p_iva.textContent      = CLP(checkout.iva);
-  p_total.textContent    = CLP(checkout.total);
+  lblSub.textContent   = CLP(checkout.subtotal);
+  lblIva.textContent   = CLP(checkout.iva);
+  lblTotal.textContent = CLP(checkout.total);
 }
 
-// Calcula y muestra vuelto
-function recalcVuelto() {
-  const metodo = metodoSel.value;
-  const totalPagar = Number(checkout?.total || 0);
-
-  // si no es efectivo, el vuelto es 0 y el campo se bloquea visualmente
-  if (metodo !== 'Efectivo') {
-    entregadoInp.value = totalPagar.toString();
-    vueltoInp.value = '0';
-    entregadoInp.disabled = true;
-    return;
-  }
-
-  // efectivo:
-  entregadoInp.disabled = false;
-
-  const entregadoNum = Number(entregadoInp.value || 0);
-  const cambio = Math.max(entregadoNum - totalPagar, 0);
-  vueltoInp.value = cambio.toString();
+// Calcular vuelto
+function recalcularVuelto() {
+  const entregado = Number(inpEntregado.value || 0);
+  const total     = Number(checkout.total || 0);
+  const vuelto    = Math.max(0, entregado - total);
+  inpVuelto.value = vuelto;
 }
 
-// Confirmar el pago = crear la venta "real"
-async function confirmarPago() {
-  if (!checkout) {
-    alert('No hay datos de compra.');
-    return;
-  }
+inpEntregado.addEventListener('input', recalcularVuelto);
 
-  const metodo = metodoSel.value;
-  const totalPagar = Number(checkout.total || 0);
-  const entregadoNum = (metodo === 'Efectivo')
-    ? Number(entregadoInp.value || 0)
-    : totalPagar;
+// Volver
+btnVolver.addEventListener('click', (e) => {
+  e.preventDefault();
+  window.history.back();
+});
 
-  if (metodo === 'Efectivo' && entregadoNum < totalPagar) {
+// Confirmar pago
+btnConfirm.addEventListener('click', async () => {
+  const total     = Number(checkout.total || 0);
+  const entregado = Number(inpEntregado.value || 0);
+
+  if (entregado < total && selMetodo.value === 'Efectivo') {
     alert('El monto entregado es menor al total.');
     return;
   }
 
-  const cambio = Math.max(entregadoNum - totalPagar, 0);
+  if (!window.SDK || !window.SDK.Sales || !window.SDK.Sales.create) {
+    alert('SDK de ventas no disponible.');
+    return;
+  }
 
-  // Construimos la venta que va a SDK
-  const ventaPayload = {
-    user: checkout.user || 'desconocido',
-    method: metodo,
-    cashGiven: entregadoNum,
-    change: cambio,
-    items: checkout.items // [{id,nombre,precio,qty}...]
-  };
+  const method = selMetodo.value || 'Efectivo';
+  const change = Math.max(0, entregado - total);
 
   try {
-    // guardamos en SDK
-    const venta = await window.SDK.Sales.create(ventaPayload);
-    // venta trae { id, ts, total, ... }
+    // 1) Verificar caja activa
+    const cur = await window.SDK.Cash.current();
+    if (!cur || cur.status !== 'OPEN') {
+      alert('No hay caja abierta.');
+      return;
+    }
 
-    // guardo el último id para ticket
-    sessionStorage.setItem('pos_last_sale', venta.id);
+    // 2) Crear venta
+    const sale = await window.SDK.Sales.create({
+      sessionId: cur.id,
+      method,
+      items: checkout.items,
+      // si en el futuro quieres, aquí puedes pasar customerName / customerTaxId
+    });
 
-    // limpiamos el checkout temporal
-    sessionStorage.removeItem('pos_checkout');
+    // 3) Guardar info para ticket.html
+    checkout.saleId    = sale?.id ?? null;
+    checkout.method    = method;
+    checkout.cashGiven = entregado;
+    checkout.change    = change;
+    checkout.user      = u.u;
 
-    // vamos al ticket
+    sessionStorage.setItem('pos_checkout', JSON.stringify(checkout));
     window.location.href = 'ticket.html';
   } catch (err) {
-    console.error('Error al confirmar pago:', err);
-    alert('No se pudo registrar la venta.');
+    console.error('Error al registrar la venta:', err);
+    alert(err?.message || 'No se pudo registrar la venta. Revisa la consola.');
   }
-}
+});
 
-// set up botón volver dinámico (cajero vs admin)
-function wireVolver() {
-  const u = getUser();
-  const href = (u?.rol === 'CAJERO') ? 'cajero.html' : 'ventas.html';
-  btnVolver.setAttribute('href', href);
-}
-
-// EVENTOS
-metodoSel?.addEventListener('change', recalcVuelto);
-entregadoInp?.addEventListener('input', recalcVuelto);
-btnConfirmar?.addEventListener('click', confirmarPago);
-
-// INIT
-wireVolver();
+// Init
 renderResumen();
-recalcVuelto();
-
+recalcularVuelto();
