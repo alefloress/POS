@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+SQLAlchemy
+asyncpg          # si usas driver async para Postgres
+psycopg2-binary  # si usas el driver síncrono
+python-dotenv
+pydantic
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart   # si en algún momento manejas forms/subidas
