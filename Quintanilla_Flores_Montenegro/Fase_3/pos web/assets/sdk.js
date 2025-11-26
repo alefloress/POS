@@ -28,13 +28,12 @@
     localStorage.setItem(key, JSON.stringify(value));
   }
 
-  function getApiBase() {
-    // si no has configurado nada, usa este por defecto
-    return (
-      localStorage.getItem(STORAGE.apiBase) || "http://localhost:8000/v1"
-    );
-  }
-
+function getApiBase() {
+  return (
+    localStorage.getItem(STORAGE.apiBase) ||
+    (window.location.origin + "/v1")
+  );
+}
   // ==========================
   //   Cliente genérico HTTP
   // ==========================
